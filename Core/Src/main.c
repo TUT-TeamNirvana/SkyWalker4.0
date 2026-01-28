@@ -105,8 +105,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    M3508_SetTarget(&buttom_motor[0], target_speed);
-    M3508_UpdateAll(buttom_motor, 4);
+    M3508_SetSpeed(&buttom_motor[0], target_speed);
+    M3508_SpeedControl(buttom_motor, 4);
     HAL_Delay(5);
     /* USER CODE END WHILE */
 

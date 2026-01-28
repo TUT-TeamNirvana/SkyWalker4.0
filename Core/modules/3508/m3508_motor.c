@@ -30,22 +30,31 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
     }
 }
 
-/* -------------------- 设置目标转速 -------------------- */
-void M3508_SetTarget(M3508_t *motor, float target_rpm)
-{
-    // 仅仅把目标速度写入电机对象
-    // 此时只是传入目标，没有执行，后续Update中会统一发送执行
+// 设置目标电流
+void M3508_SetCurrent(M3508_t *motor, float target_current) {
+    motor->target_current = (int16_t)target_current;
+}
+// 设置目标转速
+void M3508_SetSpeed(M3508_t *motor, float target_rpm){
     motor->target_speed = target_rpm;
 }
+// 电机电流环直控
+void M3508_CurrentControl(M3508_t *motors) {
 
-/* -------------------- PID计算并统一发送 -------------------- */
-void M3508_UpdateAll(M3508_t *motors, uint8_t motor_count)
+    motors[0].can->tx_buff[0] = (motors[0].target_current >> 8) & 0xFF;
+    motors[0].can->tx_buff[1] = (motors[0].target_current) & 0xFF;
+    motors[0].can->tx_buff[2] = (motors[1].target_current >> 8) & 0xFF;
+    motors[0].can->tx_buff[3] = (motors[1].target_current) & 0xFF;
+    motors[0].can->tx_buff[4] = (motors[2].target_current >> 8) & 0xFF;
+    motors[0].can->tx_buff[5] = (motors[2].target_current) & 0xFF;
+    motors[0].can->tx_buff[6] = (motors[3].target_current >> 8) & 0xFF;
+    motors[0].can->tx_buff[7] = (motors[3].target_current) & 0xFF;
+
+    CANTransmit(motors[0].can, 2);
+}
+// 速度环PID计算并控制
+void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count)
 {
-    // 对前 motor_count 个电机做控制计算并发送
-    // 这里最多4个电机
-
-    // 准备一个长度为 4 的电流指令数组（对应 4 个电机）
-    int16_t currents[4] = {0};
     // 遍历每一个电机
     for (int i = 0; i < motor_count; i++)
     {
@@ -57,30 +66,20 @@ void M3508_UpdateAll(M3508_t *motors, uint8_t motor_count)
         // 再一次判断，限制返回的电流指令值过大
         if (out > 10000) out = 10000;
         if (out < -10000) out = -10000;
-        // 将计算后的电流值存入currents数组
-        currents[i] = (int16_t)out;
+        // 将计算后的电流值进行设定
+        M3508_SetCurrent(&motors[i], out);
     }
-
-    // 打包发送 0x200 帧
-    motors[0].can->tx_buff[0] = (currents[0] >> 8) & 0xFF;
-    motors[0].can->tx_buff[1] = (currents[0]) & 0xFF;
-    motors[0].can->tx_buff[2] = (currents[1] >> 8) & 0xFF;
-    motors[0].can->tx_buff[3] = (currents[1]) & 0xFF;
-    motors[0].can->tx_buff[4] = (currents[2] >> 8) & 0xFF;
-    motors[0].can->tx_buff[5] = (currents[2]) & 0xFF;
-    motors[0].can->tx_buff[6] = (currents[3] >> 8) & 0xFF;
-    motors[0].can->tx_buff[7] = (currents[3]) & 0xFF;
-
-    // 发送CAN帧
-    CANTransmit(motors[0].can, 2);
+    M3508_CurrentControl(motors);
 }
 
 /* -------------------- CAN反馈回调 -------------------- */
 void M3508_Callback(CANInstance *instance)
 {
+    // 找到指定ID的电机
     M3508_t *motor = (M3508_t *)instance->id;
     uint8_t *d = instance->rx_buff;
 
+    // 按照手册分别获取指定的数据
     motor->feedback.rotor_angle   = (uint16_t)((d[0] << 8) | d[1]);
     motor->feedback.speed_rpm     = (int16_t)((d[2] << 8) | d[3]);
     motor->feedback.given_current = (int16_t)((d[4] << 8) | d[5]);
