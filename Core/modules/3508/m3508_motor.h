@@ -5,27 +5,30 @@
 #include "bsp_can.h"
 #include "pid.h"
 
-#define M3508_MAX_NUM 4
+#define M3508_MAX_NUM 4  // 挂载3508的最大数量
 
+// 反馈数据结构体
 typedef struct
 {
-    int16_t speed_rpm;
-    int16_t given_current;
-    uint8_t temp;
+    uint16_t rotor_angle;  // 电机转子的机械角度
+    int16_t speed_rpm;  //电机反馈转速
+    int16_t given_current;  // 电机反馈电流
+    uint8_t temp;  // 电机反馈温度
 } M3508_Feedback_t;
 
+// 电机对象结构体
 typedef struct
 {
-    CANInstance *can;
-    M3508_Feedback_t feedback;
-    PID_t pid;
-    float target_speed;
-    uint8_t id;
+    CANInstance *can;  // 该电机对应的 CAN 实例（通过 CANRegister 注册后得到）
+    M3508_Feedback_t feedback;  // 缓存最新一次 CAN 回调解析出来的反馈数据（代表电机当前状态）
+    PID_t pid;  // 速度环 PID 控制器实例
+    float target_speed;  // 目标转速（rpm）
+    uint8_t id;  // 电机编号
 } M3508_t;
 
-void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan);
-void M3508_SetTarget(M3508_t *motor, float target_rpm);
-void M3508_UpdateAll(M3508_t *motors, uint8_t motor_count);
-void M3508_Callback(CANInstance *instance);
+void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan);  // 初始化数组里所有电机对象，并注册 CAN
+void M3508_SetTarget(M3508_t *motor, float target_rpm);  // 设置单个电机目标转速
+void M3508_UpdateAll(M3508_t *motors, uint8_t motor_count);  // 对所有电机做一次 PID 计算，并通过 0x200 统一发送电流指令
+void M3508_Callback(CANInstance *instance);  // CAN 接收回调，用于解析反馈帧（由 bsp_can 收到对应 ID 时调用）
 
 #endif

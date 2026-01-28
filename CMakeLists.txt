@@ -50,10 +50,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/bsp/usb/usb.c
         Core/modules/pid/pid.c
         Core/modules/3508/m3508_motor.c
-        Core/modules/LKmotor/LKmotor.c
         Core/bsp/uart6/bsp_uart6.c
         Core/bsp/uart8/bsp_uart8.c
-        Core/modules/bus_servo/bus_servo.c
 )
 
 # Add include paths
@@ -64,10 +62,8 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         Core/bsp/usb
         Core/modules/pid
         Core/modules/3508
-        Core/modules/LKmotor
         Core/bsp/uart6
         Core/bsp/uart8
-        Core/modules/bus_servo
 )
 
 # Add project symbols (macros)
