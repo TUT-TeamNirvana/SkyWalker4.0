@@ -1,6 +1,5 @@
 #include "bsp_can.h"
 #include "main.h"
-#include "usb.h"
 #include "memory.h"
 #include "stdlib.h"
 
@@ -64,19 +63,19 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     if (!idx)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
-        printf("[bsp_can] CAN Service Init\r\n");
+        // printf("[bsp_can] CAN Service Init\r\n");
     }
     if (idx >= CAN_MX_REGISTER_CNT) // 超过最大实例数
     {
-        while (1)
-            printf("[bsp_can] CAN instance exceeded MAX num, consider balance the load of CAN bus\r\n");
+        // while (1)
+            // printf("[bsp_can] CAN instance exceeded MAX num, consider balance the load of CAN bus\r\n");
     }
     for (size_t i = 0; i < idx; i++)
     { // 重复注册 | id重复
         if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
         {
-            while (1)
-                printf("[bsp_can] CAN id crash ,tx [%lu] or rx [%lu] already registered\r\n",(unsigned long)config->tx_id, (unsigned long)config->rx_id);
+            // while (1)
+                // printf("[bsp_can] CAN id crash ,tx [%lu] or rx [%lu] already registered\r\n",(unsigned long)config->tx_id, (unsigned long)config->rx_id);
 
         }
     }
@@ -112,7 +111,7 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
     {
         if (HAL_GetTick() - tick_start > timeout) // 超时
         {
-            printf("[bsp_can] CAN MAILbox full! failed to add msg to mailbox. Cnt [%lu]\r\n",(unsigned long)busy_count);
+            // printf("[bsp_can] CAN MAILbox full! failed to add msg to mailbox. Cnt [%lu]\r\n",(unsigned long)busy_count);
 
             busy_count++;
             return 0;
@@ -122,7 +121,7 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     if (HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox))
     {
-        printf("[bsp_can] CAN bus BUS! cnt:%lu\r\n", (unsigned long)busy_count);
+        // printf("[bsp_can] CAN bus BUS! cnt:%lu\r\n", (unsigned long)busy_count);
         busy_count++;
         return 0;
     }
@@ -134,7 +133,7 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
     // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
     if (length > 8 || length == 0) // 安全检查
         while (1)
-            printf("[bsp_can] CAN DLC error! check your code or wild pointer\r\n");
+            // printf("[bsp_can] CAN DLC error! check your code or wild pointer\r\n");
     _instance->txconf.DLC = length;
 }
 

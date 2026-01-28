@@ -47,7 +47,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
         Core/bsp/can/bsp_can.c
         Core/bsp/sbus/sbus.c
-        Core/bsp/usb/usb.c
         Core/modules/pid/pid.c
         Core/modules/3508/m3508_motor.c
         Core/bsp/uart6/bsp_uart6.c
@@ -59,7 +58,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
         Core/bsp/can
         Core/bsp/sbus
-        Core/bsp/usb
         Core/modules/pid
         Core/modules/3508
         Core/bsp/uart6
