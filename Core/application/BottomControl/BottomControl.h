@@ -9,6 +9,7 @@
 #include <math.h>
 
 #define SPEED_LOOP_DT 0.001f
+#define POS_LOOP_DT 0.001f
 
 typedef struct
 {

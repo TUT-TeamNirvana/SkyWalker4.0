@@ -26,8 +26,33 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         // 后续可以在外部访问motor数组的pid进行单独对应更改
         // 这里max_output是返回的最大电流值，官方手册中3508的限制是正负16384
         PID_Init(&motors[i].pid, 1.2f, 0.0f, 0.05f, 10000.0f);
+        // 初始化位置环PID参数
+        PosPID_Init(&motors[i].pos_pid, 0.5f, 0.0f, 0.0f, 3000.0f);
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节
+        // 初始化电机位置环各个参数
+        motors[i].position_ticks = 0;  // 多圈位置归零
+        motors[i]._last_raw_angle = 0;  // 上一次的角度归零
+        motors[i]._angle_inited = 0;  // 初始化标志
     }
+}
+
+// 更新电机多圈位置 传入当先电机直接反馈的编码器的值
+static void M3508_UpdateMultiTurn(M3508_t *motor, uint16_t raw){
+    // 初始化判断
+    if (!motor->_angle_inited){
+        motor->_angle_inited = 1;  // 初始化标志设置1
+        motor->_last_raw_angle = raw;  // 保存当前角度
+        motor->position_ticks = 0;  // 初始化之后的状态为0点
+        return;
+    }
+    // 计算当前与之前的角度差值
+    int32_t diff = (int32_t)raw - (int32_t)motor->_last_raw_angle;
+    // 8192 ticks/turn，跨零处理阈值 4096
+    if (diff > 4096)       diff -= 8192;
+    else if (diff < -4096) diff += 8192;
+
+    motor->position_ticks += diff;
+    motor->_last_raw_angle = raw;
 }
 
 // 设置目标电流
@@ -72,6 +97,14 @@ void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count)
     M3508_CurrentControl(motors);
 }
 
+// 电机位置环归零
+void M3508_ResetPosition(M3508_t *motor)
+{
+    motor->position_ticks = 0;  // 多圈位置
+    motor->_last_raw_angle = 0;  // 上一次位置
+    motor->_angle_inited = 0;  // 初始化标志
+}
+
 /* -------------------- CAN反馈回调 -------------------- */
 void M3508_Callback(CANInstance *instance)
 {
@@ -84,4 +117,6 @@ void M3508_Callback(CANInstance *instance)
     motor->feedback.speed_rpm     = (int16_t)((d[2] << 8) | d[3]);
     motor->feedback.given_current = (int16_t)((d[4] << 8) | d[5]);
     motor->feedback.temp          = d[6];
+    // 更新电机多圈位置
+    M3508_UpdateMultiTurn(motor, motor->feedback.rotor_angle);
 }

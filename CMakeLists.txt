@@ -34,7 +34,8 @@ enable_language(C ASM)
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
         Core/application/BottomControl/BottomControl.c
-        Core/application/BottomControl/BottomControl.h)
+        Core/application/BottomControl/BottomControl.h
+        Core/modules/pid/pos_pid.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
@@ -50,6 +51,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/bsp/can/bsp_can.c
         Core/bsp/sbus/sbus.c
         Core/modules/pid/pid.c
+        Core/modules/pid/pos_pid.h
         Core/modules/3508/m3508_motor.c
         Core/bsp/uart6/bsp_uart6.c
         Core/bsp/uart8/bsp_uart8.c

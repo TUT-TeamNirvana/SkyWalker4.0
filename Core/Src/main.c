@@ -111,7 +111,6 @@ int main(void)
     if (HAL_GetTick() - last >= 1)
     {
       last = HAL_GetTick();
-
       //摇杆输入 按照对应的通道对应控制方向
       SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
       BottomUpdate(&Bottom);
