@@ -32,7 +32,9 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 enable_language(C ASM)
 
 # Create an executable object type
-add_executable(${CMAKE_PROJECT_NAME})
+add_executable(${CMAKE_PROJECT_NAME}
+        Core/application/BottomControl/BottomControl.c
+        Core/application/BottomControl/BottomControl.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
@@ -51,6 +53,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/modules/3508/m3508_motor.c
         Core/bsp/uart6/bsp_uart6.c
         Core/bsp/uart8/bsp_uart8.c
+        Core/application/BottomControl/BottomControl.c
 )
 
 # Add include paths
@@ -62,6 +65,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         Core/modules/3508
         Core/bsp/uart6
         Core/bsp/uart8
+        Core/application/BottomControl
 )
 
 # Add project symbols (macros)

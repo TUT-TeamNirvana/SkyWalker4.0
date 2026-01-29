@@ -32,6 +32,9 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
 
 // 设置目标电流
 void M3508_SetCurrent(M3508_t *motor, float target_current) {
+    // 范围限定
+    if (target_current > 10000) target_current = 10000;
+    if (target_current < -10000) target_current = -10000;
     motor->target_current = (int16_t)target_current;
 }
 // 设置目标转速
@@ -63,9 +66,6 @@ void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count)
         float out = PID_Calc(&motors[i].pid,
                              motors[i].target_speed,
                              motors[i].feedback.speed_rpm);
-        // 再一次判断，限制返回的电流指令值过大
-        if (out > 10000) out = 10000;
-        if (out < -10000) out = -10000;
         // 将计算后的电流值进行设定
         M3508_SetCurrent(&motors[i], out);
     }

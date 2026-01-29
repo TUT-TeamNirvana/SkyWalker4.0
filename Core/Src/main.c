@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "m3508_motor.h"
 #include "sbus.h"
-#include <math.h>
+#include "BottomControl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,33 +59,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern uint16_t rc_ch[2]; // rc_ch[0]: X轴（左右转），rc_ch[1]: Y轴（前进）
-M3508_t buttom_motor[4];
-int8_t dir[4] = { +1, +1, -1, -1}; // 按照电机安装方向
-
-// 映射函数
-float mapf(float x, float in_min, float in_max, float out_min, float out_max)
-{
-  if (x < in_min) x = in_min;
-  if (x > in_max) x = in_max;
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-// 底盘运动控制
-void Chassis_Control(float vx, float vy, float wz)
-{
-  // 麦克纳姆轮运动学分配 (X形布局)
-  float v1 = +vx - vy - wz;  // 左前
-  float v2 = +vx + vy - wz;  // 左后
-  float v3 = +vx - vy + wz;  // 右后
-  float v4 = +vx + vy + wz;  // 右前
-
-  // 应用安装方向表（你定义的）
-  M3508_SetSpeed(&buttom_motor[0], dir[0] * v1);
-  M3508_SetSpeed(&buttom_motor[1], dir[1] * v2);
-  M3508_SetSpeed(&buttom_motor[2], dir[2] * v3);
-  M3508_SetSpeed(&buttom_motor[3], dir[3] * v4);
-}
+BottomControl Bottom;  // 创建底盘
 /* USER CODE END 0 */
 
 /**
@@ -125,14 +99,8 @@ int main(void)
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
   SBUS_Init();
-  rc.channels[0] = 1025;
-  rc.channels[1] = 1025;
-  rc.channels[2] = 240;
-  rc.channels[3] = 1025;
+  BottomInit(&Bottom);
 
-  M3508_InitAll(buttom_motor, &hcan1);
-
-  float vx = 0, wz = 0, vy = 0;
   uint32_t last = HAL_GetTick();
   /* USER CODE END 2 */
 
@@ -144,20 +112,9 @@ int main(void)
     {
       last = HAL_GetTick();
 
-      // === 摇杆输入映射 ===
-      vx = mapf(rc.channels[1], 240, 1800, -8000, +8000);  // 前后（通道2）
-      vy = -mapf(rc.channels[0], 240, 1800, -8000, +8000);  // 左右（通道1）
-      wz = mapf(rc.channels[3], 240, 1800, +8000, -8000);  // 旋转（通道3)
-
-      // 死区处理
-      if (fabs(vx) < 200) vx = 0;
-      if (fabs(vy) < 200) vy = 0;
-      if (fabs(wz) < 200) wz = 0;
-
-      // === 综合运动控制 ===
-      Chassis_Control(vx, vy, wz);
-      // PID 更新并发送 CAN 帧
-      M3508_SpeedControl(buttom_motor, 4);
+      //摇杆输入 按照对应的通道对应控制方向
+      SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
+      BottomUpdate(&Bottom);
     }
     /* USER CODE END WHILE */
 

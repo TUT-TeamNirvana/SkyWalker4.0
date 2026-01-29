@@ -40,6 +40,10 @@ void SBUS_Init(void)
     // 开启 DMA+IDLE 接收
     HAL_UARTEx_ReceiveToIdle_DMA(&huart1, sbus_dma_buf, SBUS_FRAME_LEN);
     __HAL_DMA_DISABLE_IT(huart1.hdmarx, DMA_IT_HT); // 关闭半传输中断，避免干扰
+    rc.channels[0] = 1025;
+    rc.channels[1] = 1025;
+    rc.channels[2] = 240;
+    rc.channels[3] = 1025;
 }
 
 // ================== UART 回调 ==================
