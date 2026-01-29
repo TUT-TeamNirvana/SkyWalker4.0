@@ -8,9 +8,11 @@
 #include "m3508_motor.h"
 #include <math.h>
 
+#define SPEED_LOOP_DT 0.001f
+
 typedef struct
 {
-    M3508_t bottom_motor[4];  // 4个电机
+    M3508_t bottom_motors[4];  // 4个电机
     int8_t dir[4]; // 按照电机安装方向
     float vx, wz, vy;  // 前后 左右 旋转
 } BottomControl;

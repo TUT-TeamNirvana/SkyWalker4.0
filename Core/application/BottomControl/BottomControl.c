@@ -3,7 +3,11 @@
 // 底盘初始化
 void BottomInit(BottomControl *Bottom) {
 
-    M3508_InitAll(Bottom->bottom_motor, &hcan1);
+    M3508_InitAll(Bottom->bottom_motors, &hcan1);
+    // 设置底盘电机速度环pid的时间间隔
+    for (int i=0;i<4;i++) {
+        PID_SetDt(&Bottom->bottom_motors[i].pid, SPEED_LOOP_DT);
+    }
     // 静止运动状态
     Bottom->vx = Bottom->vy = Bottom->wz = 0;
     // 电机安装方向
@@ -41,14 +45,14 @@ void Chassis_Control(BottomControl *Bottom){
     float v3 = +Bottom->vx - Bottom->vy + Bottom->wz;  // 右后
     float v4 = +Bottom->vx + Bottom->vy + Bottom->wz;  // 右前
     // 应用安装方向表
-    M3508_SetSpeed(&Bottom->bottom_motor[0], Bottom->dir[0] * v1);
-    M3508_SetSpeed(&Bottom->bottom_motor[1], Bottom->dir[1] * v2);
-    M3508_SetSpeed(&Bottom->bottom_motor[2], Bottom->dir[2] * v3);
-    M3508_SetSpeed(&Bottom->bottom_motor[3], Bottom->dir[3] * v4);
+    M3508_SetSpeed(&Bottom->bottom_motors[0], Bottom->dir[0] * v1);
+    M3508_SetSpeed(&Bottom->bottom_motors[1], Bottom->dir[1] * v2);
+    M3508_SetSpeed(&Bottom->bottom_motors[2], Bottom->dir[2] * v3);
+    M3508_SetSpeed(&Bottom->bottom_motors[3], Bottom->dir[3] * v4);
 }
 
 // 底盘解算并更新发送执行
 void BottomUpdate(BottomControl *Bottom) {
     Chassis_Control(Bottom);
-    M3508_SpeedControl(Bottom->bottom_motor, 4);
+    M3508_SpeedControl(Bottom->bottom_motors, 4);
 }
