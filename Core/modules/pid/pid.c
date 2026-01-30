@@ -30,7 +30,7 @@ float PID_Calc(PID_t *pid, float ref, float feedback)
     pid->integral += error * pid->dt;
     // 微分项
     float derivative = (error - pid->last_error) / pid->dt;
-    pid->last_error = error;
+    pid->last_error = error;  // 更新误差
 
     pid->output = pid->Kp * error + pid->Ki * pid->integral + pid->Kd * derivative;
 
