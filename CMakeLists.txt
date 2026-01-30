@@ -50,12 +50,19 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
         Core/bsp/can/bsp_can.c
         Core/bsp/sbus/sbus.c
-        Core/modules/pid/pid.c
-        Core/modules/pid/pos_pid.h
-        Core/modules/3508/m3508_motor.c
         Core/bsp/uart6/bsp_uart6.c
         Core/bsp/uart8/bsp_uart8.c
+        Core/bsp/log/bsp_log.c
+        Core/bsp/log/printf.c
+
+        Core/modules/pid/pid.c
+        Core/modules/3508/m3508_motor.c
+
         Core/application/BottomControl/BottomControl.c
+
+        Core/SEGGER_RTT/RTT/SEGGER_RTT.c
+        Core/SEGGER_RTT/RTT/SEGGER_RTT_printf.c
+        Core/SEGGER_RTT/RTT/SEGGER_RTT_ASM_ARMv7M.s
 )
 
 # Add include paths
@@ -63,11 +70,17 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
         Core/bsp/can
         Core/bsp/sbus
-        Core/modules/pid
-        Core/modules/3508
         Core/bsp/uart6
         Core/bsp/uart8
+        Core/bsp/log
+
+        Core/modules/pid
+        Core/modules/3508
+
         Core/application/BottomControl
+
+        Core/SEGGER_RTT/Config
+        Core/SEGGER_RTT/RTT
 )
 
 # Add project symbols (macros)

@@ -28,6 +28,8 @@
 #include "m3508_motor.h"
 #include "sbus.h"
 #include "BottomControl.h"
+
+#include "bsp_log.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +72,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  BSPLogInit();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -98,6 +100,8 @@ int main(void)
   MX_UART8_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
+
+
   SBUS_Init();
   BottomInit(&Bottom);
 
@@ -108,6 +112,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    //PrintLog("hello\n");  // 发送日志
+    // 发送波形 发送两个数据 可以在示波器上指定显示方式
+    float a = -45.121;
+    float b = 3.1415926f;
+    RTT_PrintWave_vofa(2, a, b);
+
     if (HAL_GetTick() - last >= 1)
     {
       last = HAL_GetTick();
