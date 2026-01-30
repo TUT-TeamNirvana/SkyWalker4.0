@@ -8,6 +8,7 @@
 #include "m3508_motor.h"
 #include <math.h>
 
+// 底盘电机串级PID的时间间隔
 #define SPEED_LOOP_DT 0.001f
 #define POS_LOOP_DT 0.001f
 

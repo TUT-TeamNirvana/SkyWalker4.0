@@ -24,10 +24,15 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         motors[i].target_speed = 0;  // 初始化目标转速为0
         // 初始化PID（此时所有电机共用一套PID）（速度环PID）
         // 后续可以在外部访问motor数组的pid进行单独对应更改
+        float SKp = 1.2f, SKi = 0.5f, SKd = 0.05f,
+              PKp = 0.5f, PKi = 0.0f, PKd = 0.0f,
+              MAX_OUT_S = 10000.0f, MAX_OUT_P = 6000.0f;
         // 这里max_output是返回的最大电流值，官方手册中3508的限制是正负16384
-        PID_Init(&motors[i].pid, 1.2f, 0.0f, 0.05f, 10000.0f);
+        PID_Init(&motors[i].pid, SKp, SKi, SKd, MAX_OUT_S);
+        PID_SetIntegralLimit(&motors[i].pid, 0.5f * MAX_OUT_S / SKi);  // 设置速度环积分限幅 i不能为0
         // 初始化位置环PID参数
-        PosPID_Init(&motors[i].pos_pid, 0.5f, 0.0f, 0.0f, 6000.0f);
+        PosPID_Init(&motors[i].pos_pid, PKp, PKi, PKd, MAX_OUT_P);
+        // PosPID_SetIntegralLimit(&motors[i].pos_pid, 0.7f * MAX_OUT_P / PKi);  // 同理积分限幅
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节
         // 初始化电机位置环各个参数
         motors[i].position_ticks = 0;  // 多圈位置归零
