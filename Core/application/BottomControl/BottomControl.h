@@ -21,5 +21,6 @@ typedef struct
 void BottomInit(BottomControl *Bottom);  // 底盘初始化
 void SbusI6Mode(BottomControl *Bottom, int16_t CHX, int16_t CHY, int16_t CHZ);  // 福斯i6输入形式的遥感通道映射
 void BottomUpdate(BottomControl *Bottom);  // 底盘解算并更新发送执行
+void BottomMotorSpeedlog(BottomControl *Bottom, int number);  // 底盘电机转速调试波形
 
 #endif //BUTTONCONTROL_H

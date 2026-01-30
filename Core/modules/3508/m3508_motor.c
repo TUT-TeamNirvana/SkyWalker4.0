@@ -27,7 +27,7 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         // 这里max_output是返回的最大电流值，官方手册中3508的限制是正负16384
         PID_Init(&motors[i].pid, 1.2f, 0.0f, 0.05f, 10000.0f);
         // 初始化位置环PID参数
-        PosPID_Init(&motors[i].pos_pid, 0.5f, 0.0f, 0.0f, 3000.0f);
+        PosPID_Init(&motors[i].pos_pid, 0.5f, 0.0f, 0.0f, 6000.0f);
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节
         // 初始化电机位置环各个参数
         motors[i].position_ticks = 0;  // 多圈位置归零
@@ -119,4 +119,12 @@ void M3508_Callback(CANInstance *instance)
     motor->feedback.temp          = d[6];
     // 更新电机多圈位置
     M3508_UpdateMultiTurn(motor, motor->feedback.rotor_angle);
+}
+
+// rtt 速度波形调试显示
+void Speed_LogShow(M3508_t *motor) {
+    // 分别显示目标转速和实际转速的波形
+    float target_speed = motor->target_speed;
+    float speed_rpm = motor->feedback.speed_rpm;
+    RTT_PrintWave_vofa(2, target_speed, speed_rpm);
 }

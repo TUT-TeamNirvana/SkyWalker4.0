@@ -5,6 +5,7 @@
 #include "bsp_can.h"
 #include "pid.h"
 #include "pos_pid.h"
+#include "bsp_log.h"
 
 #define M3508_MAX_NUM 4  // 挂载3508的最大数量
 
@@ -43,5 +44,6 @@ static int32_t M3508_GetPositionTicks(const M3508_t *motor){  // 返回连续多
     return motor->position_ticks;
 }
 void M3508_ResetPosition(M3508_t *m);  // 位置归零
+void Speed_LogShow(M3508_t *motor);  // rtt 速度波形调试显示
 
 #endif

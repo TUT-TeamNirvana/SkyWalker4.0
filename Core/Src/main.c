@@ -72,7 +72,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  BSPLogInit();
+  BSPLogInit();  // rtt调试器初始化
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -114,9 +114,6 @@ int main(void)
   {
     //PrintLog("hello\n");  // 发送日志
     // 发送波形 发送两个数据 可以在示波器上指定显示方式
-    float a = -45.121;
-    float b = 3.1415926f;
-    RTT_PrintWave_vofa(2, a, b);
 
     if (HAL_GetTick() - last >= 1)
     {
@@ -124,6 +121,8 @@ int main(void)
       //摇杆输入 按照对应的通道对应控制方向
       SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
       BottomUpdate(&Bottom);
+
+      BottomMotorSpeedlog(&Bottom, 2);
     }
     /* USER CODE END WHILE */
 

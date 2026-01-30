@@ -72,3 +72,9 @@ void BottomUpdate(BottomControl *Bottom) {
     Chassis_Control(Bottom);
     M3508_SpeedControl(Bottom->bottom_motors, 4);
 }
+
+// 底盘电机转速调试波形
+void BottomMotorSpeedlog(BottomControl *Bottom, int number) {
+    // 单电机模式
+        Speed_LogShow(&Bottom->bottom_motors[number - 1]);
+}
