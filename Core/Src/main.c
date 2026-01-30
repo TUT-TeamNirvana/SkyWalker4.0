@@ -25,7 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "m3508_motor.h"
 #include "sbus.h"
 #include "BottomControl.h"
 

@@ -1,9 +1,7 @@
 #ifndef M3508_MOTOR_H
 #define M3508_MOTOR_H
 
-#include "main.h"
 #include "bsp_can.h"
-#include "pid.h"
 #include "pos_pid.h"
 #include "bsp_log.h"
 
@@ -37,12 +35,12 @@ typedef struct
 void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan);  // 初始化数组里所有电机对象，并注册 CAN
 void M3508_SetCurrent(M3508_t *motor, float target_current);  // 设置单个电机目标电流
 void M3508_SetSpeed(M3508_t *motor, float target_rpm);  // 设置单个电机目标转速
+void M3508_SetPosition(M3508_t *motor, float target_Position);  // 设置单个电机目标位置
 void M3508_CurrentControl(M3508_t *motors);  // 全部电机通过0x200统一发送电流命令
 void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count);  // 对所有电机做一次电流环PID计算并发送电流
+void M3508_PositionControl(M3508_t *motors, uint8_t motor_count);  // 对所有电机做一次位置环PID计算并发送速度
 void M3508_Callback(CANInstance *instance);  // CAN 接收回调，用于解析反馈帧（由 bsp_can 收到对应 ID 时调用）
-static int32_t M3508_GetPositionTicks(const M3508_t *motor){  // 返回连续多圈位置值
-    return motor->position_ticks;
-}
+int32_t M3508_GetPositionTicks(const M3508_t *motor);  // 返回连续多圈位置值
 void M3508_ResetPosition(M3508_t *m);  // 位置归零
 void Speed_LogShow(M3508_t *motor);  // rtt 速度波形调试显示
 

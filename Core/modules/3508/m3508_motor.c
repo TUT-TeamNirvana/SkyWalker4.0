@@ -66,6 +66,15 @@ void M3508_SetCurrent(M3508_t *motor, float target_current) {
 void M3508_SetSpeed(M3508_t *motor, float target_rpm){
     motor->target_speed = target_rpm;
 }
+// 设置目标位置
+void M3508_SetPosition(M3508_t *motor, float target_Position){
+    PosPID_SetRef(&motor->pos_pid, (int32_t)target_Position);
+}
+// 获取当前多圈位置
+int32_t M3508_GetPositionTicks(const M3508_t *motor){  // 返回连续多圈位置值
+    return motor->position_ticks;
+}
+
 // 电机电流环直控
 void M3508_CurrentControl(M3508_t *motors) {
 
@@ -81,8 +90,7 @@ void M3508_CurrentControl(M3508_t *motors) {
     CANTransmit(motors[0].can, 2);
 }
 // 速度环PID计算并控制
-void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count)
-{
+void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count){
     // 遍历每一个电机
     for (int i = 0; i < motor_count; i++)
     {
@@ -95,6 +103,17 @@ void M3508_SpeedControl(M3508_t *motors, uint8_t motor_count)
         M3508_SetCurrent(&motors[i], out);
     }
     M3508_CurrentControl(motors);
+}
+// 位置环PID计算并控制
+void M3508_PositionControl(M3508_t *motors, uint8_t motor_count) {
+    // 遍历每一个电机
+    for (int i = 0; i < motor_count; i++)
+    {
+        int32_t pos_now = M3508_GetPositionTicks(&motors[i]);  // 获取当前多圈累加后的位置
+        float speed_ref = PosPID_Calc(&motors[i].pos_pid, pos_now);  // 位置环计算输出速度
+        M3508_SetSpeed(&motors[i], speed_ref);  // 将计算好的速度传给速度环
+    }
+    M3508_SpeedControl(motors, motor_count);
 }
 
 // 电机位置环归零

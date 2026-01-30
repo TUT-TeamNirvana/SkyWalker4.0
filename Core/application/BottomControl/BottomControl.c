@@ -45,18 +45,16 @@ void Chassis_Control(BottomControl *Bottom){
     float v2 = +Bottom->vx + Bottom->vy - Bottom->wz;  // 左后
     float v3 = +Bottom->vx - Bottom->vy + Bottom->wz;  // 右后
     float v4 = +Bottom->vx + Bottom->vy + Bottom->wz;  // 右前
-    // 判断是否静止
+    // 判断是否静止 静止状态进入位置环锁定模式
     if (v1 == v2 && v2 == v3 && v3 == v4 && v4 == 0) {
         // 遍历每一个电机
         for (int i=0;i<4;i++) {
-            PosPID_SetRef(&Bottom->bottom_motors[i].pos_pid, 0);  // 直接设定目标位置为零点
-            int32_t pos_now = M3508_GetPositionTicks(&Bottom->bottom_motors[i]);  // 获取当前多圈累加后的位置
-            float speed_ref = PosPID_Calc(&Bottom->bottom_motors[i].pos_pid, pos_now);  // 位置环计算输出速度
-            M3508_SetSpeed(&Bottom->bottom_motors[i], speed_ref);  // 将计算好的速度传给速度环
+            M3508_SetPosition(&Bottom->bottom_motors[i], 0);
+            M3508_PositionControl(Bottom->bottom_motors, 4);
         }
         return;
     }
-    // 如果没有静止 则不断刷新零点
+    // 如果没有静止 则不断刷新零点 放开后面普通速度环模式
     for (int i=0;i<4;i++) {
         M3508_ResetPosition(&Bottom->bottom_motors[i]);
     }
@@ -65,12 +63,13 @@ void Chassis_Control(BottomControl *Bottom){
     M3508_SetSpeed(&Bottom->bottom_motors[1], Bottom->dir[1] * v2);
     M3508_SetSpeed(&Bottom->bottom_motors[2], Bottom->dir[2] * v3);
     M3508_SetSpeed(&Bottom->bottom_motors[3], Bottom->dir[3] * v4);
+
+    M3508_SpeedControl(Bottom->bottom_motors, 4);
 }
 
 // 底盘解算并更新发送执行
 void BottomUpdate(BottomControl *Bottom) {
     Chassis_Control(Bottom);
-    M3508_SpeedControl(Bottom->bottom_motors, 4);
 }
 
 // 底盘电机转速调试波形
