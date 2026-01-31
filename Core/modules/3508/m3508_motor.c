@@ -32,9 +32,9 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         PID_SetIntegralLimit(&motors[i].pid, 0.5f * MAX_OUT_S / SKi);  // 设置速度环积分限幅 i不能为0
         PID_EnableAntiWindup(&motors[i].pid, 1);  // 开启抗积分饱和
         PID_EnableDOnMeasurement(&motors[i].pid, 1);  // 开启微分先行
-        PID_SetLPFCutoffHz(&motors[i].pid, 60.0f);  // 设置feedback低通滤波截止频率
+        PID_SetLPFCutoffHz(&motors[i].pid, 1000.0f);  // 设置feedback低通滤波截止频率
         PID_EnableLPF(&motors[i].pid, 1);  // 开启feedback速度反馈低通滤波
-        PID_SetDFilterCutoffHz(&motors[i].pid, 120.0f);  // 设置D低通滤波截止频率
+        PID_SetDFilterCutoffHz(&motors[i].pid, 1000.0f);  // 设置D低通滤波截止频率
         PID_EnableDFilter(&motors[i].pid, 1);  // 开启D低通滤波
 
         // 初始化位置环PID参数
