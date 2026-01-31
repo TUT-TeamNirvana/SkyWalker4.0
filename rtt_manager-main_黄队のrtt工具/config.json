@@ -1,0 +1,24 @@
+{
+    "interface": [
+        { "name": "Jlink", "config": "interface/jlink.cfg" },
+        { "name": "CMSIS-DAP", "config": "interface/cmsis-dap.cfg" }
+    ],
+    "chips": [
+        {
+            "name": "STM32F4_CCM",
+            "target": "target/stm32f4x.cfg",
+            "ram_start": "0x20000000", 
+            "ram_end": "0x20020000",
+            "clock": "1000" ,
+            "rtt_ram_size": "1024",
+            "channel": "0"
+        },
+        {
+            "name": "STM32F103",
+            "target": "target/stm32f1x.cfg",
+            "ram_start": "0x20000000",
+            "ram_end": "0x20005000",
+            "clock": "2000"
+        }
+    ]
+}
