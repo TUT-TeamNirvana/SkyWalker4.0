@@ -26,10 +26,10 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         // 后续可以在外部访问motor数组的pid进行单独对应更改
         float SKp = 2.0f, SKi = 0.5f, SKd = 0.00f,
               PKp = 1.0f, PKi = 0.1f, PKd = 0.1f,
-              MAX_OUT_S = 10000.0f, MAX_OUT_P = 6000.0f;
+              MAX_OUT_S = 15000.0f, MAX_OUT_P = 6000.0f;
         // 这里max_output是返回的最大电流值，官方手册中3508的限制是正负16384
         PID_Init(&motors[i].pid, SKp, SKi, SKd, MAX_OUT_S);
-        PID_SetIntegralLimit(&motors[i].pid, 0.5f * MAX_OUT_S / SKi);  // 设置速度环积分限幅 i不能为0
+        if (SKi != 0.0f) PID_SetIntegralLimit(&motors[i].pid, 0.5f * MAX_OUT_S / SKi);  // 设置速度环积分限幅
         PID_EnableAntiWindup(&motors[i].pid, 1);  // 开启抗积分饱和
         PID_EnableDOnMeasurement(&motors[i].pid, 1);  // 开启微分先行
         PID_SetLPFCutoffHz(&motors[i].pid, 1000.0f);  // 设置feedback低通滤波截止频率
@@ -39,7 +39,7 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
 
         // 初始化位置环PID参数
         PosPID_Init(&motors[i].pos_pid, PKp, PKi, PKd, MAX_OUT_P);
-        PosPID_SetIntegralLimit(&motors[i].pos_pid, 0.7f * MAX_OUT_P / PKi);  // 同理积分限幅
+        if (PKi != 0.0f) PosPID_SetIntegralLimit(&motors[i].pos_pid, 0.7f * MAX_OUT_P / PKi);  // 同理积分限幅
         PosPID_EnableAntiWindup(&motors[i].pos_pid, 1);  // 开启抗积分饱和
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节
         // 初始化电机位置环各个参数
