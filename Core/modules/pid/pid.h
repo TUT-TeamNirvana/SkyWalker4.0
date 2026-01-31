@@ -1,6 +1,8 @@
 #ifndef PID_H
 #define PID_H
 
+#include <stdint.h>
+
 // PID结构体
 typedef struct
 {
@@ -11,6 +13,7 @@ typedef struct
 
     float integral;  // 积分累加项（把历史误差累加起来）
     float integral_max;  // 一手积分限幅（限制积累的积分最大值）
+    uint8_t anti_windup_en; // 抗积分饱和开关（0=关，1=开）
 
     float last_error;  // 上一次的误差（用于计算微分项）
     float output;  // 本次计算得到的输出（也保存下来）
@@ -23,6 +26,8 @@ void PID_Init(PID_t *pid, float kp, float ki, float kd, float max_output);
 void  PID_SetDt(PID_t *pid, float dt_s);
 // 设置一手积分限幅 （这里可以控制开关 i_max 为0的时候为关闭积分限幅）
 void PID_SetIntegralLimit(PID_t *pid, float i_max);
+// 抗积分饱和
+void PID_EnableAntiWindup(PID_t *pid, uint8_t enable);
 // PID计算函数；分别传入期望值、反馈值
 float PID_Calc(PID_t *pid, float ref, float feedback);
 

@@ -17,6 +17,10 @@ void PosPID_SetDt(PosPID_t *pid, float dt_s){
 void PosPID_SetIntegralLimit(PosPID_t *pid, float i_max){
     PID_SetIntegralLimit(&pid->pid, i_max);  // 调用的是内环积分限幅
 }
+// 设置抗积分饱和
+void PosPID_EnableAntiWindup(PosPID_t *pid, uint8_t enable){
+    PID_EnableAntiWindup(&pid->pid, enable);
+}
 // 设置目标位置
 void PosPID_SetRef(PosPID_t *pid, int32_t ref_ticks){
     pid->ref_ticks = ref_ticks;
