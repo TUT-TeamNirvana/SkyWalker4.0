@@ -8,7 +8,7 @@ static float clampf(float x, float min_v, float max_v){
 }
 
 // 一阶低通滤波计算
-static float lpf1_step(PID_t *pid, float x)
+static float lpf1_step(PID_t *pid, float x)  // 速度反馈低通滤波
 {
     if (!pid->lpf_en) return x;
 
@@ -21,6 +21,22 @@ static float lpf1_step(PID_t *pid, float x)
     float a = pid->lpf_alpha;
     float y = a * pid->lpf_state + (1.0f - a) * x;
     pid->lpf_state = y;
+    return y;
+}
+static float d_lpf_step(PID_t *pid, float x)  // D 低通滤波
+{
+    if (!pid->d_lpf_en) return x;
+
+    if (!pid->d_lpf_inited)
+    {
+        pid->d_lpf_state = x;
+        pid->d_lpf_inited = 1;
+        return x;
+    }
+
+    float a = pid->d_lpf_alpha;
+    float y = a * pid->d_lpf_state + (1.0f - a) * x;
+    pid->d_lpf_state = y;
     return y;
 }
 
@@ -38,6 +54,10 @@ void PID_Init(PID_t *pid, float kp, float ki, float kd, float max_output)
     pid->integral_max = 0.0f;
     // 默认关闭抗积分饱和
     pid->anti_windup_en = 0;
+    // 默认关闭微分先行
+    pid->d_on_meas_en = 0;
+    // 上一次的返回值清零
+    pid->last_feedback = 0.0f;
     // 上一次的误差清零
     pid->last_error = 0;
     // 输出清零
@@ -48,6 +68,11 @@ void PID_Init(PID_t *pid, float kp, float ki, float kd, float max_output)
     pid->lpf_alpha = 0.0f;   // 开启之前要先设定
     pid->lpf_state = 0.0f;
     pid->lpf_inited = 0; // 初始化标识
+    // 同理的D低通滤波
+    pid->d_lpf_en = 0;
+    pid->d_lpf_alpha = 0.0f;
+    pid->d_lpf_state = 0.0f;
+    pid->d_lpf_inited = 0;
 }
 
 void PID_SetDt(PID_t *pid, float dt_s){
@@ -62,12 +87,15 @@ void PID_SetIntegralLimit(PID_t *pid, float i_max){
 void PID_EnableAntiWindup(PID_t *pid, uint8_t enable){
     pid->anti_windup_en = (enable != 0);  // 0关1开
 }
+// 微分先行设置
+void PID_EnableDOnMeasurement(PID_t *pid, uint8_t enable){
+    pid->d_on_meas_en = (enable != 0);
+}
 
 // LPF低通滤波设置
-void PID_EnableLPF(PID_t *pid, uint8_t enable){
+void PID_EnableLPF(PID_t *pid, uint8_t enable){  // 速度反馈低通滤波
     pid->lpf_en = (enable != 0);
-    // 开启时重新初始化 避免旧状态污染
-    pid->lpf_inited = 0;
+    pid->lpf_inited = 0;  // 开启时重新初始化 避免旧状态污染
 }
 void PID_SetLPFAlpha(PID_t *pid, float alpha){  // 设定alpha强度
     // 合理范围：0<=alpha<1，alpha 越接近 1 越平滑但延迟越大
@@ -77,15 +105,31 @@ void PID_SetLPFAlpha(PID_t *pid, float alpha){  // 设定alpha强度
 }
 void PID_SetLPFCutoffHz(PID_t *pid, float fc_hz){  // 设置截止频率强度
     // fc<=0 视为关闭滤波（或 alpha=0）
-    if (fc_hz <= 0.0f || pid->dt <= 0.0f)
-    {
+    if (fc_hz <= 0.0f || pid->dt <= 0.0f){
         pid->lpf_alpha = 0.0f;
         return;
     }
-
     // alpha = exp(-2*pi*fc*dt)
     float alpha = expf(-2.0f * 3.1415926f * fc_hz * pid->dt);
     PID_SetLPFAlpha(pid, alpha);
+}  // 接下来D的滤波与上面的速度反馈滤波一模一样 只是分开计算
+void PID_EnableDFilter(PID_t *pid, uint8_t enable){    // D 低通滤波
+    pid->d_lpf_en = (enable != 0);
+    pid->d_lpf_inited = 0; // 重新初始化，避免旧状态污染
+}
+void PID_SetDFilterAlpha(PID_t *pid, float alpha){
+    if (alpha < 0.0f) alpha = 0.0f;
+    if (alpha > 0.9999f) alpha = 0.9999f;
+    pid->d_lpf_alpha = alpha;
+}
+void PID_SetDFilterCutoffHz(PID_t *pid, float fc_hz){
+    if (fc_hz <= 0.0f || pid->dt <= 0.0f){
+        pid->d_lpf_alpha = 0.0f;
+        return;
+    }
+    // alpha = exp(-2*pi*fc*dt)
+    float alpha = expf(-2.0f * 3.1415926f * fc_hz * pid->dt);
+    PID_SetDFilterAlpha(pid, alpha);
 }
 
 float PID_Calc(PID_t *pid, float ref, float feedback)
@@ -95,9 +139,24 @@ float PID_Calc(PID_t *pid, float ref, float feedback)
     float error = ref - new_feedback;  // float error = ref - feedback;
 
     float P = pid->Kp * error;  // 先计算P
-    float derivative = (error - pid->last_error) / pid->dt;  // 微分项
-    float D = pid->Kd * derivative;  // 再计算D
+    // 来一手微分先行
+    float derivative_raw;
+    if (pid->d_on_meas_en){  // 开启微分先行
+        // D = -Kd * d(fb)/dt
+        derivative_raw = -(new_feedback - pid->last_feedback) / pid->dt;
+        pid->last_feedback = new_feedback;
+    }
+    else{
+        // 传统D = Kd * d(error)/dt
+        derivative_raw = (error - pid->last_error) / pid->dt;
+    }
+
+    // 算完微分紧接着来一首D低通滤波
+    float derivative = d_lpf_step(pid, derivative_raw);
+    float D = pid->Kd * derivative;
+
     pid->last_error = error;  // 更新误差
+
     // 把当前误差累加到积分项里
     // 积分项 （先生成一手候选积分方便后期做抗积分饱和，不做可以直接当作积分项）
     float integral_candidate = pid->integral + error * pid->dt;

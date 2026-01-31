@@ -16,6 +16,10 @@ typedef struct
     float integral_max;  // 一手积分限幅（限制积累的积分最大值）
     uint8_t anti_windup_en; // 抗积分饱和开关（0=关，1=开）
 
+    // 用于微分先行
+    uint8_t d_on_meas_en;     // 开关
+    float   last_feedback;    // 用于上一反馈值
+
     float last_error;  // 上一次的误差（用于计算微分项）
     float output;  // 本次计算得到的输出（也保存下来）
     float output_max;  // 输出限幅的最大绝对值（最后会把输出夹在 [-output_max, +output_max]）
@@ -25,6 +29,12 @@ typedef struct
     float   lpf_alpha;    // y = alpha*y_prev + (1-alpha)*x, alpha∈[0,1)
     float   lpf_state;    // 上一次 y（滤波输出）
     uint8_t lpf_inited;   // 避免启动时跳变：第一次直接置为输入
+    // D 通道低通滤波
+    uint8_t d_lpf_en;         // 0=关 1=开
+    float   d_lpf_alpha;      // 0<=alpha<1
+    float   d_lpf_state;      // 上一次滤波后的 derivative
+    uint8_t d_lpf_inited;
+
 } PID_t;
 
 // 对传入的PID结构体初始化一套PID系数以及限制最大输出
@@ -35,6 +45,8 @@ void  PID_SetDt(PID_t *pid, float dt_s);
 void PID_SetIntegralLimit(PID_t *pid, float i_max);
 // 抗积分饱和
 void PID_EnableAntiWindup(PID_t *pid, uint8_t enable);
+// 微分先行
+void PID_EnableDOnMeasurement(PID_t *pid, uint8_t enable);
 // PID计算函数；分别传入期望值、反馈值
 float PID_Calc(PID_t *pid, float ref, float feedback);
 
@@ -45,5 +57,9 @@ void PID_SetLPFAlpha(PID_t *pid, float alpha);
 // 用截止频率 fc(Hz) 来设置 alpha（更工程化）
 // alpha = exp(-2*pi*fc*dt)
 void PID_SetLPFCutoffHz(PID_t *pid, float fc_hz);
+// 同理的D通道低通滤波
+void PID_EnableDFilter(PID_t *pid, uint8_t enable);
+void PID_SetDFilterAlpha(PID_t *pid, float alpha);
+void PID_SetDFilterCutoffHz(PID_t *pid, float fc_hz);
 
 #endif
