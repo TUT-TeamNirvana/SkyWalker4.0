@@ -39,6 +39,7 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
 
         // 初始化位置环PID参数
         PosPID_Init(&motors[i].pos_pid, PKp, PKi, PKd, MAX_OUT_P);
+        PosPID_SetLimitTicks(&motors[i].pos_pid, 50);  // 设置转子最小死区
         if (PKi != 0.0f) PosPID_SetIntegralLimit(&motors[i].pos_pid, 0.7f * MAX_OUT_P / PKi);  // 同理积分限幅
         PosPID_EnableAntiWindup(&motors[i].pos_pid, 1);  // 开启抗积分饱和
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节

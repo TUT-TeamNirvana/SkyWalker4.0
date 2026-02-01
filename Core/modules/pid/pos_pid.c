@@ -7,11 +7,16 @@ void PosPID_Init(PosPID_t *pid,
 {
     pid->max_rpm = (max_rpm < 0.0f) ? -max_rpm : max_rpm;  // 输出限幅
     pid->ref_ticks = 0;  // 初始化目标位置
+    pid->limit_ticks = 0;  // 初始化最小死区
     PID_Init(&pid->pid, kp, ki, kd, pid->max_rpm);
 }
 // 设置位置环PID时间间隔
 void PosPID_SetDt(PosPID_t *pid, float dt_s){
     PID_SetDt(&pid->pid, dt_s);
+}
+// 设置最小死区
+void PosPID_SetLimitTicks(PosPID_t *pid, int32_t limit_ticks) {
+    pid->limit_ticks = limit_ticks;
 }
 // 设置积分限幅
 void PosPID_SetIntegralLimit(PosPID_t *pid, float i_max){
@@ -28,6 +33,9 @@ void PosPID_SetRef(PosPID_t *pid, int32_t ref_ticks){
 // 计算位置环
 float PosPID_Calc(PosPID_t *pid, int32_t fb_ticks)
 {
+    if (abs(fb_ticks - pid->ref_ticks) <= pid->limit_ticks) {
+        return 0;  // 如果在死区内部 则无需更新了
+    }
     // 相同的调用
     float out = PID_Calc(&pid->pid, (float)pid->ref_ticks, (float)fb_ticks);
     // 双重保险限幅

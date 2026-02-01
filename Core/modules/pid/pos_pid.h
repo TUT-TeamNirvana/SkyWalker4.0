@@ -7,6 +7,7 @@
 
 #include "pid.h"
 #include <stdint.h>
+#include <stdlib.h>
 
 // 位置环PID结构体
 typedef struct
@@ -14,12 +15,15 @@ typedef struct
     PID_t pid;          // 位置环PID：输入 ticks，输出 rpm（速度给定）
     float max_rpm;      // 输出限幅（rpm）
     int32_t ref_ticks;  // 目标位置（ticks）
+    int32_t limit_ticks;  // 设置最小死区
 } PosPID_t;
 
 // 位置环PID初始化
 void PosPID_Init(PosPID_t *pid, float kp, float ki, float kd, float max_rpm);
 // 设置位置环PID时间间隔
 void PosPID_SetDt(PosPID_t *pid, float dt_s);
+// 设置最小死区
+void PosPID_SetLimitTicks(PosPID_t *pid, int32_t limit_ticks);
 // 设置积分限幅
 void PosPID_SetIntegralLimit(PosPID_t *pid, float i_max);
 // 设置抗积分饱和
