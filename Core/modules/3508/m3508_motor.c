@@ -72,8 +72,8 @@ static void M3508_UpdateMultiTurn(M3508_t *motor, uint16_t raw){
 // 设置目标电流
 void M3508_SetCurrent(M3508_t *motor, float target_current) {
     // 范围限定
-    if (target_current > 10000) target_current = 10000;
-    if (target_current < -10000) target_current = -10000;
+    if (target_current > 15000) target_current = 15000;
+    if (target_current < -15000) target_current = -15000;
     motor->target_current = (int16_t)target_current;
 }
 // 设置目标转速

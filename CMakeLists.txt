@@ -60,6 +60,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
         Core/modules/pid/pid.c
         Core/modules/3508/m3508_motor.c
+        Core/modules/LK-MG/lk-mg_motor.c
 
         Core/application/BottomControl/BottomControl.c
 
@@ -79,6 +80,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
         Core/modules/pid
         Core/modules/3508
+        Core/modules/LK-MG
 
         Core/application/BottomControl
 

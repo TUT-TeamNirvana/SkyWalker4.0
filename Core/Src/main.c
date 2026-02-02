@@ -28,7 +28,7 @@
 #include "sbus.h"
 #include "BottomControl.h"
 
-#include "bsp_log.h"
+#include "lk-mg_motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +61,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 BottomControl Bottom;  // 创建底盘
+LKMG_t lk_motors[1];
 /* USER CODE END 0 */
 
 /**
@@ -103,8 +104,11 @@ int main(void)
 
   SBUS_Init();
   BottomInit(&Bottom, &hcan1);
+  LKMG_InitAll(lk_motors, &hcan1);
 
   uint32_t last = HAL_GetTick();
+
+  LKMG_SetCurrent(&lk_motors[0], 500);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,14 +118,18 @@ int main(void)
     //PrintLog("hello\n");  // 发送日志
     // 发送波形 发送两个数据 可以在示波器上指定显示方式
 
-    if (HAL_GetTick() - last >= 1)
+    if (HAL_GetTick() - last >= 10)
     {
+      /*
       last = HAL_GetTick();
       //摇杆输入 按照对应的通道对应控制方向
       SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
       BottomUpdate(&Bottom);
 
       BottomMotorSpeedlog(&Bottom, 2);
+      */
+
+      LKMG_CurrentControl(lk_motors);
     }
     /* USER CODE END WHILE */
 

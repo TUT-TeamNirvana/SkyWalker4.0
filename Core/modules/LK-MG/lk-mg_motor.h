@@ -7,7 +7,7 @@
 
 #include "bsp_can.h"
 
-#define M3508_MAX_NUM 4  // 挂载3508的最大数量
+#define LKMG_MAX_NUM 1  // 挂载电机的最大数量
 
 // 反馈数据结构体
 typedef struct
