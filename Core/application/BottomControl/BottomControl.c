@@ -1,9 +1,9 @@
 #include "BottomControl.h"
 
 // 底盘初始化
-void BottomInit(BottomControl *Bottom) {
+void BottomInit(BottomControl *Bottom, CAN_HandleTypeDef *hcan) {
 
-    M3508_InitAll(Bottom->bottom_motors, &hcan1);
+    M3508_InitAll(Bottom->bottom_motors, hcan);
     // 设置底盘电机速度环和位置环pid的时间间隔
     for (int i=0;i<4;i++) {
         PID_SetDt(&Bottom->bottom_motors[i].pid, SPEED_LOOP_DT);
@@ -75,5 +75,5 @@ void BottomUpdate(BottomControl *Bottom) {
 // 底盘电机转速调试波形
 void BottomMotorSpeedlog(BottomControl *Bottom, int number) {
     // 单电机模式
-        Speed_LogShow(&Bottom->bottom_motors[number - 1]);
+        M3508_Speed_LogShow(&Bottom->bottom_motors[number - 1]);
 }

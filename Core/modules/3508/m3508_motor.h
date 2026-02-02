@@ -42,6 +42,6 @@ void M3508_PositionControl(M3508_t *motors, uint8_t motor_count);  // 对所有�
 void M3508_Callback(CANInstance *instance);  // CAN 接收回调，用于解析反馈帧（由 bsp_can 收到对应 ID 时调用）
 int32_t M3508_GetPositionTicks(const M3508_t *motor);  // 返回连续多圈位置值
 void M3508_ResetPosition(M3508_t *m);  // 位置归零
-void Speed_LogShow(M3508_t *motor);  // rtt 速度波形调试显示
+void M3508_Speed_LogShow(M3508_t *motor);  // rtt 速度波形调试显示
 
 #endif

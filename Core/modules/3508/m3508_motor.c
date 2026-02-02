@@ -155,7 +155,7 @@ void M3508_Callback(CANInstance *instance)
 }
 
 // rtt 速度波形调试显示
-void Speed_LogShow(M3508_t *motor) {
+void M3508_Speed_LogShow(M3508_t *motor) {
     // 分别显示目标转速和实际转速的波形
     float target_speed = motor->target_speed;
     float speed_rpm = motor->feedback.speed_rpm;

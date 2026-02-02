@@ -102,7 +102,7 @@ int main(void)
 
 
   SBUS_Init();
-  BottomInit(&Bottom);
+  BottomInit(&Bottom, &hcan1);
 
   uint32_t last = HAL_GetTick();
   /* USER CODE END 2 */
