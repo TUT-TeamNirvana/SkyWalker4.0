@@ -37,15 +37,15 @@ void LKMG_SetCurrent(LKMG_t *motor, float target_current) {
 void LKMG_CurrentControl(LKMG_t *motors) {
 
     for (int i = 0; i < LKMG_MAX_NUM; i++) {
-        if (motors[i].feedback.given_current == motors[0].target_current)
+        if (motors[i].feedback.given_current == motors[i].target_current)
             continue;
 
         motors[i].can->tx_buff[0] = 0xA1;
         motors[i].can->tx_buff[1] = 0;
         motors[i].can->tx_buff[2] = 0;
         motors[i].can->tx_buff[3] = 0;
-        motors[i].can->tx_buff[4] = (motors[0].target_current) & 0xFF;
-        motors[i].can->tx_buff[5] = (motors[0].target_current >> 8) & 0xFF;
+        motors[i].can->tx_buff[4] = (motors[i].target_current) & 0xFF;
+        motors[i].can->tx_buff[5] = (motors[i].target_current >> 8) & 0xFF;
         motors[i].can->tx_buff[6] = 0;
         motors[i].can->tx_buff[7] = 0;
 
@@ -65,4 +65,14 @@ void LKMG_Callback(CANInstance *instance)
     motor->feedback.given_current = (int16_t)(d[2] | (d[3] << 8));
     motor->feedback.speed_rpm     = (int16_t)(d[4] | (d[5] << 8));
     motor->feedback.rotor_angle   = (uint16_t)(d[6] | (d[7] << 8));
+}
+
+// rtt 调试显示
+void LKMG_LogShow(LKMG_t *motor) {
+
+    float temp = motor->feedback.temp;  // 电机反馈温度
+    float given_current = motor->feedback.given_current;  // 电机反馈电流
+    float speed_rpm = motor->feedback.speed_rpm;  //电机反馈转速
+    float rotor_angle = motor->feedback.rotor_angle;  // 电机转子的机械角度
+    RTT_PrintWave_vofa(4, temp, given_current, speed_rpm, rotor_angle);
 }

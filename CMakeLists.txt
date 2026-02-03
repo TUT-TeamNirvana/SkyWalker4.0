@@ -38,7 +38,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         Core/modules/pid/pos_pid.h
         Core/modules/pid/pos_pid.c
         Core/modules/LK-MG/lk-mg_motor.c
-        Core/modules/LK-MG/lk-mg_motor.h)
+        Core/modules/LK-MG/lk-mg_motor.h
+)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

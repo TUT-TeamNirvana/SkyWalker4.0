@@ -6,6 +6,7 @@
 #define LK_MG_MOTOR_H
 
 #include "bsp_can.h"
+#include "bsp_log.h"
 
 #define LKMG_MAX_NUM 1  // 挂载电机的最大数量
 
@@ -32,5 +33,6 @@ void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan);  // 初始化数组�
 void LKMG_SetCurrent(LKMG_t *motor, float target_current);  // 设置单个电机目标电流
 void LKMG_CurrentControl(LKMG_t *motors);  // 电流环控制
 void LKMG_Callback(CANInstance *instance);  // CAN 接收回调
+void LKMG_LogShow(LKMG_t *motor);  // rtt 调试显示
 
 #endif //LK_MG_MOTOR_H

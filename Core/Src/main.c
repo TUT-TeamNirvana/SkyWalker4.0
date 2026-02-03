@@ -60,7 +60,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-BottomControl Bottom;  // 创建底盘
+// BottomControl Bottom;  // 创建底盘
 LKMG_t lk_motors[1];
 /* USER CODE END 0 */
 
@@ -101,14 +101,13 @@ int main(void)
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
-
-  SBUS_Init();
-  BottomInit(&Bottom, &hcan1);
+  //SBUS_Init();
+  //BottomInit(&Bottom, &hcan1);
   LKMG_InitAll(lk_motors, &hcan1);
 
   uint32_t last = HAL_GetTick();
 
-  LKMG_SetCurrent(&lk_motors[0], 500);
+  LKMG_SetCurrent(&lk_motors[0], 50);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,6 +129,7 @@ int main(void)
       */
 
       LKMG_CurrentControl(lk_motors);
+      LKMG_LogShow(&lk_motors[0]);
     }
     /* USER CODE END WHILE */
 
