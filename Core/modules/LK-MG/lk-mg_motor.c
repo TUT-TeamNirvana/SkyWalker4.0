@@ -22,18 +22,25 @@ void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan)
         motors[i].id = i + 1; // 电机编号（1~4）
 
         CANSetDLC(motors[i].can, 8);  // 设置发送帧长度为 8 字节
+
+        motors[i].target_current = 0;
+        motors[i].target_speed = 0;
     }
 }
 
 // 设置目标电流
 void LKMG_SetCurrent(LKMG_t *motor, float target_current) {
     // 范围限定
-    if (target_current > 1240) target_current = 1240;
-    if (target_current < -1240) target_current = -1240;
+    if (target_current > MAX_CURRENT) target_current = MAX_CURRENT;
+    if (target_current < -MAX_CURRENT) target_current = -MAX_CURRENT;
     motor->target_current = (int16_t)target_current;
 }
+// 设置目标转速
+void LKMG_SetSpeed(LKMG_t *motor, float target_speed) {
+    motor->target_speed = (int32_t)target_speed;
+}
 
-// 电机电流环直控
+// 转矩环
 void LKMG_CurrentControl(LKMG_t *motors) {
 
     for (int i = 0; i < LKMG_MAX_NUM; i++) {
@@ -48,6 +55,27 @@ void LKMG_CurrentControl(LKMG_t *motors) {
         motors[i].can->tx_buff[5] = (motors[i].target_current >> 8) & 0xFF;
         motors[i].can->tx_buff[6] = 0;
         motors[i].can->tx_buff[7] = 0;
+
+        CANTransmit(motors[i].can, 2);
+    }
+}
+// 速度环
+void LKMG_SpeedControl(LKMG_t *motors) {
+
+    for (int i = 0; i < LKMG_MAX_NUM; i++) {
+        if (motors[i].feedback.speed_rpm == motors[i].target_speed)
+            continue;
+
+        int16_t max_current = MAX_CURRENT;
+
+        motors[i].can->tx_buff[0] = 0xA2;
+        motors[i].can->tx_buff[1] = 0;
+        motors[i].can->tx_buff[2] = max_current & 0xFF;
+        motors[i].can->tx_buff[5] = max_current & 0xFF;
+        motors[i].can->tx_buff[4] = (motors[i].target_speed) & 0xFF;
+        motors[i].can->tx_buff[5] = (motors[i].target_speed >> 8) & 0xFF;
+        motors[i].can->tx_buff[6] = (motors[i].target_speed >> 16) & 0xFF;
+        motors[i].can->tx_buff[7] = (motors[i].target_speed >> 24) & 0xFF;
 
         CANTransmit(motors[i].can, 2);
     }

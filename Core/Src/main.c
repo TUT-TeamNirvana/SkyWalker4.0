@@ -107,7 +107,7 @@ int main(void)
 
   uint32_t last = HAL_GetTick();
 
-  LKMG_SetCurrent(&lk_motors[0], 50);
+  LKMG_SetSpeed(&lk_motors[0], 500000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,7 +128,7 @@ int main(void)
       BottomMotorSpeedlog(&Bottom, 2);
       */
 
-      LKMG_CurrentControl(lk_motors);
+      LKMG_SpeedControl(lk_motors);
       LKMG_LogShow(&lk_motors[0]);
     }
     /* USER CODE END WHILE */
