@@ -25,6 +25,8 @@ void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan)
 
         motors[i].target_current = 0;
         motors[i].target_speed = 0;
+        motors[i].target_pos = 0;
+        motors[i].max_speed = 3600;
     }
 }
 
@@ -38,6 +40,10 @@ void LKMG_SetCurrent(LKMG_t *motor, float target_current) {
 // 设置目标转速
 void LKMG_SetSpeed(LKMG_t *motor, float target_speed) {
     motor->target_speed = (int32_t)target_speed;
+}
+// 设置目标位置
+void LKMG_SetPos(LKMG_t *motor, float target_pos) {
+    motor->target_pos = (int32_t)target_pos;
 }
 
 // 转矩环
@@ -71,11 +77,32 @@ void LKMG_SpeedControl(LKMG_t *motors) {
         motors[i].can->tx_buff[0] = 0xA2;
         motors[i].can->tx_buff[1] = 0;
         motors[i].can->tx_buff[2] = max_current & 0xFF;
-        motors[i].can->tx_buff[5] = max_current & 0xFF;
+        motors[i].can->tx_buff[3] = (max_current >> 8) & 0xFF;
         motors[i].can->tx_buff[4] = (motors[i].target_speed) & 0xFF;
         motors[i].can->tx_buff[5] = (motors[i].target_speed >> 8) & 0xFF;
         motors[i].can->tx_buff[6] = (motors[i].target_speed >> 16) & 0xFF;
         motors[i].can->tx_buff[7] = (motors[i].target_speed >> 24) & 0xFF;
+
+        CANTransmit(motors[i].can, 2);
+    }
+}
+// 位置环
+void LKMG_PosControl(LKMG_t *motors) {
+
+    for (int i = 0; i < LKMG_MAX_NUM; i++) {
+        //if (motors[i].feedback.rotor_angle == motors[i].target_pos)
+            //continue;
+
+        int16_t max_speed = (int16_t)motors[i].max_speed;
+
+        motors[i].can->tx_buff[0] = 0xA4;
+        motors[i].can->tx_buff[1] = 0;
+        motors[i].can->tx_buff[2] = max_speed & 0xFF;
+        motors[i].can->tx_buff[3] = (max_speed >> 8) & 0xFF;
+        motors[i].can->tx_buff[4] = (motors[i].target_pos) & 0xFF;
+        motors[i].can->tx_buff[5] = (motors[i].target_pos >> 8) & 0xFF;
+        motors[i].can->tx_buff[6] = (motors[i].target_pos >> 16) & 0xFF;
+        motors[i].can->tx_buff[7] = (motors[i].target_pos >> 24) & 0xFF;
 
         CANTransmit(motors[i].can, 2);
     }

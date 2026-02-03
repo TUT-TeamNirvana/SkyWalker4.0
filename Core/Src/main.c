@@ -107,7 +107,7 @@ int main(void)
 
   uint32_t last = HAL_GetTick();
 
-  LKMG_SetSpeed(&lk_motors[0], 500000);
+  LKMG_SetPos(&lk_motors[0], 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,8 +119,8 @@ int main(void)
 
     if (HAL_GetTick() - last >= 10)
     {
-      /*
       last = HAL_GetTick();
+      /*
       //摇杆输入 按照对应的通道对应控制方向
       SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
       BottomUpdate(&Bottom);
@@ -128,7 +128,7 @@ int main(void)
       BottomMotorSpeedlog(&Bottom, 2);
       */
 
-      LKMG_SpeedControl(lk_motors);
+      LKMG_PosControl(lk_motors);
       LKMG_LogShow(&lk_motors[0]);
     }
     /* USER CODE END WHILE */

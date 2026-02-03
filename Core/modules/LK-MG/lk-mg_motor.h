@@ -27,6 +27,8 @@ typedef struct
     LKMG_Feedback_t feedback;  // 缓存最新一次 CAN 回调解析出来的反馈数据（代表电机当前状态）
     int16_t target_current;  // 设置目标电流
     int32_t target_speed;  // 目标转速
+    int32_t target_pos;  // 目标位置
+    int16_t max_speed;  // 设置最大速度
     uint8_t id;  // 电机编号
 } LKMG_t;
 
@@ -34,8 +36,10 @@ typedef struct
 void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan);  // 初始化数组里所有电机对象，并注册 CAN
 void LKMG_SetCurrent(LKMG_t *motor, float target_current);  // 设置单个电机目标电流
 void LKMG_SetSpeed(LKMG_t *motor, float target_speed);  // 设置转速
+void LKMG_SetPos(LKMG_t *motor, float target_pos);  // 设置目标位置
 void LKMG_CurrentControl(LKMG_t *motors);  // 电流环控制
 void LKMG_SpeedControl(LKMG_t *motors);  // 速度环
+void LKMG_PosControl(LKMG_t *motors);  // 位置环
 void LKMG_Callback(CANInstance *instance);  // CAN 接收回调
 void LKMG_LogShow(LKMG_t *motor);  // rtt 调试显示
 
