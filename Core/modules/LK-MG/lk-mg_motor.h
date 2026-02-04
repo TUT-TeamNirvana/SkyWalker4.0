@@ -34,6 +34,7 @@ typedef struct
 
 // 注意翎控MG系列转矩环不是电流环但这里先当电流环用
 void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan);  // 初始化数组里所有电机对象，并注册 CAN
+void LKMG_GetInfo(LKMG_t *motors);  // 获取数据
 void LKMG_SetCurrent(LKMG_t *motor, float target_current);  // 设置单个电机目标电流
 void LKMG_SetSpeed(LKMG_t *motor, float target_speed);  // 设置转速
 void LKMG_SetPos(LKMG_t *motor, float target_pos);  // 设置目标位置
