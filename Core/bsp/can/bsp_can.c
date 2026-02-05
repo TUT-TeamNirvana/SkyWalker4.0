@@ -28,7 +28,6 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
  */
 static void CANAddFilter(CANInstance *_instance)
 {
-    /*
     CAN_FilterTypeDef can_filter_conf = {0};
     static uint8_t can1_filter_idx = 0, can2_filter_idx = 14; // 0-13给can1用,14-27给can2用
 
@@ -41,25 +40,6 @@ static void CANAddFilter(CANInstance *_instance)
     can_filter_conf.FilterActivation = CAN_FILTER_ENABLE;                                                     // 启用过滤器
 
     HAL_CAN_ConfigFilter(_instance->can_handle, &can_filter_conf);
-    */
-
-    CAN_FilterTypeDef f = {0};
-    static uint8_t can1_filter_idx = 0, can2_filter_idx = 14;
-
-    f.FilterBank = (_instance->can_handle == &hcan1) ? (can1_filter_idx++) : (can2_filter_idx++);
-    f.FilterFIFOAssignment = CAN_RX_FIFO0;
-    f.FilterMode = CAN_FILTERMODE_IDMASK;       // 掩码模式
-    f.FilterScale = CAN_FILTERSCALE_32BIT;      // 32位
-    f.SlaveStartFilterBank = 14;
-    f.FilterActivation = CAN_FILTER_ENABLE;
-
-    // 关键：全0 + 全0mask => 放行所有ID（标准帧会被接收）
-    f.FilterIdHigh = 0x0000;
-    f.FilterIdLow  = 0x0000;
-    f.FilterMaskIdHigh = 0x0000;
-    f.FilterMaskIdLow  = 0x0000;
-
-    HAL_CAN_ConfigFilter(_instance->can_handle, &f);
 }
 
 /**
