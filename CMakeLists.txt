@@ -39,6 +39,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         Core/modules/pid/pos_pid.c
         Core/modules/LK-MG/lk-mg_motor.c
         Core/modules/LK-MG/lk-mg_motor.h
+        Core/application/ArmControl/ArmControl.c
+        Core/application/ArmControl/ArmControl.h
 )
 
 # Add STM32CubeMX generated sources
@@ -64,6 +66,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         Core/modules/LK-MG/lk-mg_motor.c
 
         Core/application/BottomControl/BottomControl.c
+        Core/application/ArmControl/ArmControl.c
 
         Core/SEGGER_RTT/RTT/SEGGER_RTT.c
         Core/SEGGER_RTT/RTT/SEGGER_RTT_printf.c
@@ -84,6 +87,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         Core/modules/LK-MG
 
         Core/application/BottomControl
+        Core/application/ArmControl
 
         Core/SEGGER_RTT/Config
         Core/SEGGER_RTT/RTT

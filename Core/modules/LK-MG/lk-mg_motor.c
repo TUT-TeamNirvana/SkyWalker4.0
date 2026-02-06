@@ -26,7 +26,8 @@ void LKMG_InitAll(LKMG_t *motors, CAN_HandleTypeDef *hcan)
         motors[i].target_current = 0;
         motors[i].target_speed = 0;
         motors[i].target_pos = 0;
-        motors[i].max_speed = 3600;
+        motors[i].max_speed = 1000;
+        motors[i].Speed_Ratio = 1;
     }
 }
 

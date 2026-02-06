@@ -8,7 +8,7 @@
 #include "bsp_can.h"
 #include "bsp_log.h"
 
-#define LKMG_MAX_NUM 1  // 挂载电机的最大数量
+#define LKMG_MAX_NUM 6  // 挂载电机的最大数量
 #define MAX_CURRENT 1240  // 最大电流
 
 // 反馈数据结构体
@@ -30,6 +30,7 @@ typedef struct
     int32_t target_pos;  // 目标位置
     int16_t max_speed;  // 设置最大速度
     uint8_t id;  // 电机编号
+    float Speed_Ratio;  // 电机减速比
 } LKMG_t;
 
 // 注意翎控MG系列转矩环不是电流环但这里先当电流环用

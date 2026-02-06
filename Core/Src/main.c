@@ -27,10 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "sbus.h"
 #include "BottomControl.h"
-
-#include "lk-mg_motor.h"
-
-#include "bsp_uart6.h"
+#include "ArmControl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,73 +61,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 // BottomControl Bottom;  // 创建底盘
-LKMG_t lk_motors[1];
-
-int   g_state = 0;        // 存 S 后面的那个字段，比如 0
-float g_joint_deg[6] = {0}; // 存最后 6 个数据
-
-// 串口数据解析
-static int parse_S_frame(const char *line, int *state_out, float joint_out[6])
-{
-  // line 形如：S,0,23.6,-31.2,38.4,-29.0,-32.6,76.7
-  // 为了安全，复制到本地 buffer 再 strtok
-  char buf[UART6_DMA_RX_SIZE];
-  strncpy(buf, line, sizeof(buf) - 1);
-  buf[sizeof(buf) - 1] = '\0';
-
-  // 去掉末尾 \r \n（如果上位机发了）
-  size_t n = strlen(buf);
-  while (n > 0 && (buf[n-1] == '\r' || buf[n-1] == '\n')) {
-    buf[n-1] = '\0';
-    n--;
-  }
-
-  char *saveptr = NULL;
-  char *tok = strtok_r(buf, ",", &saveptr);
-  if (!tok) return 0;
-
-  // 第 1 段：必须是 "S"
-  if (!(tok[0] == 'S' && tok[1] == '\0')) return 0;
-
-  // 第 2 段：state（整数）
-  tok = strtok_r(NULL, ",", &saveptr);
-  if (!tok) return 0;
-  *state_out = (int)strtol(tok, NULL, 10);
-
-  // 第 3~8 段：6 个 float
-  for (int i = 0; i < 6; i++)
-  {
-    tok = strtok_r(NULL, ",", &saveptr);
-    if (!tok) return 0;
-
-    char *endp = NULL;
-    float v = strtof(tok, &endp);
-    if (endp == tok) return 0;   // 解析失败
-    joint_out[i] = v;
-  }
-
-  return 1;
-}
-
-static void UART6_OnLine(char *str)
-{
-  int st;
-  float j[6];
-
-  if (parse_S_frame(str, &st, j))
-  {
-    g_state = st;
-    for (int i = 0; i < 6; i++) {
-      g_joint_deg[i] = j[i];
-    }
-
-    // 需要的话可打印确认（注意：中断里打印可能影响实时性）
-    // UART6_Print("OK state=%d j=%.1f %.1f %.1f %.1f %.1f %.1f\r\n",
-    //            g_state, g_joint_deg[0], g_joint_deg[1], g_joint_deg[2],
-    //            g_joint_deg[3], g_joint_deg[4], g_joint_deg[5]);
-  }
-}
-
+ArmControl Arm;  // 创建机械臂
 /* USER CODE END 0 */
 
 /**
@@ -171,10 +102,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   //SBUS_Init();
-  BSP_UART6_Init();
-  UART6_RegisterLineCallback(UART6_OnLine);
+  ArmInit(&Arm, &hcan1);
   //BottomInit(&Bottom, &hcan1);
-  LKMG_InitAll(lk_motors, &hcan1);
 
   uint32_t last = HAL_GetTick();
   /* USER CODE END 2 */
@@ -197,15 +126,7 @@ int main(void)
       BottomMotorSpeedlog(&Bottom, 2);
       */
 
-      LKMG_SetPos(&lk_motors[0], g_joint_deg[0] * 100 * 10);
-      LKMG_PosControl(lk_motors);
-      LKMG_LogShow(&lk_motors[0]);
-
-      UART6_Print("Hello %d ", g_state);
-      for (int i = 0; i < 6; i++) {
-        UART6_Print("%d ", (int)(g_joint_deg[i]*10));
-      }
-      UART6_Print("\n");
+      ArmUpdate(&Arm);
     }
     /* USER CODE END WHILE */
 
