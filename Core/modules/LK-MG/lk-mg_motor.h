@@ -8,7 +8,7 @@
 #include "bsp_can.h"
 #include "bsp_log.h"
 
-#define LKMG_MAX_NUM 6  // 挂载电机的最大数量
+#define LKMG_MAX_NUM 7  // 挂载电机的最大数量
 #define MAX_CURRENT 1240  // 最大电流
 
 // 反馈数据结构体
@@ -40,8 +40,9 @@ void LKMG_SetCurrent(LKMG_t *motor, float target_current);  // 设置单个电�
 void LKMG_SetSpeed(LKMG_t *motor, float target_speed);  // 设置转速
 void LKMG_SetPos(LKMG_t *motor, float target_pos);  // 设置目标位置
 void LKMG_CurrentControl(LKMG_t *motors);  // 电流环控制
+void LKMG_CurrentControl_each(LKMG_t *motor);  // 单电机转矩换控制
 void LKMG_SpeedControl(LKMG_t *motors);  // 速度环
-void LKMG_PosControl(LKMG_t *motors);  // 位置环
+void LKMG_PosControl(LKMG_t *motors, int num);  // 位置环
 void LKMG_Callback(CANInstance *instance);  // CAN 接收回调
 void LKMG_LogShow(LKMG_t *motor);  // rtt 调试显示
 

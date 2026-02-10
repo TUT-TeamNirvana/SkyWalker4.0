@@ -4,7 +4,7 @@
 
 #include "ArmControl.h"
 
-int   G_STATE;        // 夹爪状态
+int   G_STATE = 1;        // 夹爪状态
 float G_JOINT_DEG[6]; // 机械臂关节角度
 
 // 融合版：收到一行就解析 S 帧并更新全局数据
@@ -63,12 +63,25 @@ void ArmInit(ArmControl *Arm, CAN_HandleTypeDef *hcan) {
     Arm->arm_motors[2].Speed_Ratio = 36;
     Arm->arm_motors[1].Speed_Ratio = 36;
     Arm->arm_motors[0].Speed_Ratio = 6;
+
+    LKMG_SetCurrent(&Arm->arm_motors[6], 50);
 }
 
 // 机械臂角度更新并控制
 void ArmUpdate(ArmControl *Arm) {
 
     UART6_Print("Get %d ", Arm->g_state);
+    if (Arm->g_state == 0 && G_STATE == 1) {
+        LKMG_SetCurrent(&Arm->arm_motors[6], 50);
+        Arm->g_state = 1;
+        LKMG_CurrentControl_each(&Arm->arm_motors[6]);
+    }
+    else if (Arm->g_state == 1 && G_STATE == 0) {
+        LKMG_SetCurrent(&Arm->arm_motors[6], -50);
+        Arm->g_state = 0;
+        LKMG_CurrentControl_each(&Arm->arm_motors[6]);
+    }
+
     for (int i=0;i<6;i++) {
 
         Arm->g_joint_deg[i] = G_JOINT_DEG[i];
@@ -78,6 +91,7 @@ void ArmUpdate(ArmControl *Arm) {
 
         UART6_Print("%d ", (int)(Arm->g_joint_deg[i]*10));
     }
+
     UART6_Print("\n");
-    LKMG_PosControl(Arm->arm_motors);
+    LKMG_PosControl(Arm->arm_motors, 6);
 }

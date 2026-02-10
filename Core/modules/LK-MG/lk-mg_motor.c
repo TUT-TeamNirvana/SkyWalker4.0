@@ -75,6 +75,23 @@ void LKMG_CurrentControl(LKMG_t *motors) {
         CANTransmit(motors[i].can, 2);
     }
 }
+void LKMG_CurrentControl_each(LKMG_t *motor) {
+
+    if (motor->feedback.given_current == motor->target_current)
+        return;
+
+    motor->can->tx_buff[0] = 0xA1;
+    motor->can->tx_buff[1] = 0;
+    motor->can->tx_buff[2] = 0;
+    motor->can->tx_buff[3] = 0;
+    motor->can->tx_buff[4] = (motor->target_current) & 0xFF;
+    motor->can->tx_buff[5] = (motor->target_current >> 8) & 0xFF;
+    motor->can->tx_buff[6] = 0;
+    motor->can->tx_buff[7] = 0;
+
+    CANTransmit(motor->can, 2);
+}
+
 // 速度环
 void LKMG_SpeedControl(LKMG_t *motors) {
 
@@ -97,9 +114,9 @@ void LKMG_SpeedControl(LKMG_t *motors) {
     }
 }
 // 位置环
-void LKMG_PosControl(LKMG_t *motors) {
+void LKMG_PosControl(LKMG_t *motors, int num) {
 
-    for (int i = 0; i < LKMG_MAX_NUM; i++) {
+    for (int i = 0; i < num; i++) {
         //if (motors[i].feedback.rotor_angle == motors[i].target_pos)
             //continue;
 

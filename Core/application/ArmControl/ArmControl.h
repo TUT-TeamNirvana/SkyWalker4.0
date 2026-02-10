@@ -10,7 +10,7 @@
 
 typedef struct
 {
-    LKMG_t arm_motors[6];  // 电机
+    LKMG_t arm_motors[7];  // 电机
     int   g_state;        // 夹爪状态
     float g_joint_deg[6]; // 机械臂关节角度
 } ArmControl;
