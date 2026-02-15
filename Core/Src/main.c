@@ -60,8 +60,9 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// BottomControl Bottom;  // 创建底盘
-ArmControl Arm;  // 创建机械臂
+BottomControl Bottom;  // 创建底盘
+// ArmControl Arm;  // 创建机械臂
+
 /* USER CODE END 0 */
 
 /**
@@ -101,9 +102,9 @@ int main(void)
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  //SBUS_Init();
-  ArmInit(&Arm, &hcan1);
-  //BottomInit(&Bottom, &hcan1);
+  SBUS_Init();
+  //ArmInit(&Arm, &hcan1);
+  BottomInit(&Bottom, &hcan1);
 
   uint32_t last = HAL_GetTick();
   /* USER CODE END 2 */
@@ -118,15 +119,13 @@ int main(void)
     if (HAL_GetTick() - last >= 10)
     {
       last = HAL_GetTick();
-      /*
       //摇杆输入 按照对应的通道对应控制方向
       SbusI6Mode(&Bottom, rc.channels[1], rc.channels[0], rc.channels[3]);
       BottomUpdate(&Bottom);
 
       BottomMotorSpeedlog(&Bottom, 2);
-      */
 
-      ArmUpdate(&Arm);
+      //ArmUpdate(&Arm);
     }
     /* USER CODE END WHILE */
 

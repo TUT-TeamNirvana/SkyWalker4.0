@@ -25,7 +25,7 @@ void M3508_InitAll(M3508_t *motors, CAN_HandleTypeDef *hcan)
         // 初始化PID（此时所有电机共用一套PID）（速度环PID）
         // 后续可以在外部访问motor数组的pid进行单独对应更改
         float SKp = 2.0f, SKi = 0.5f, SKd = 0.00f,
-              PKp = 1.0f, PKi = 0.1f, PKd = 0.1f,
+              PKp = 1.0f, PKi = 0.0f, PKd = 0.0f,
               MAX_OUT_S = 15000.0f, MAX_OUT_P = 6000.0f;
         // 这里max_output是返回的最大电流值，官方手册中3508的限制是正负16384
         PID_Init(&motors[i].pid, SKp, SKi, SKd, MAX_OUT_S);
